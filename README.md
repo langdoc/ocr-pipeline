@@ -20,6 +20,34 @@ We have been using [ocrd-train](https://github.com/OCR-D/ocrd-train) from [OCR-D
 
 Works well, and is at least at the moment free to use. Only available tool that is able to work with hand written text. New online user interface is very well developed, and seems suitable for collaborative work i.e. within teaching setting. The models trained on Transkribus tend to be extremely good and bootsrap very fast. The only minus is the lack of transparency in the training process, as the software used is not all open source. Access to the model training interface has to be requested from the developers.
 
+## Pipelines
+
+With Ocropy the training data can be created by starting with a folder full of wanted images. Ocropy will binarize and rename the images into their own folder. We have usually added new pages in batches and named these as `train_part_1`, `train_part_2` etc. This makes it easy to control what images went into which batch.
+
+```
+ocropus-nlbin original_images_1/*.png -o train_part_1
+ocropus-gpageseg 'train_part_1/*.bin.png'
+ocropus-gtedit html train_part_1/*/*.png -o train_part_1.html
+```
+
+This creates an HTML file that can be opened and edited in Firefox, displaying the lines and empty boxes for text. For the first batch manual typing is maybe the best alternative, or if the text is already available, then to copy it to correct segments.
+
+The images can be written back to file structure so that they turn into Ground Truth text lines next to line images:
+
+```
+ocropus-gtedit extract -O train_part_1.html
+```
+
+A model can be trained with:
+
+```
+ocropus-rtrain -c ./train/*/*gt.txt -o una-01-58a2a7 -d 20 ./train_part_1/*/*png
+```
+
+Parameter `-c` tells Ocropy to find characters from the text files. Some collegues have reported better accuracy by specifying the character set manually, and this is worth testing.
+
+**TODO:** Explanation on similar Tesseract workflow etc.
+
 ## OCR evaluation tools
 
 - Eddie Antonio Santos's [ocreval](https://github.com/eddieantonio/ocreval)
